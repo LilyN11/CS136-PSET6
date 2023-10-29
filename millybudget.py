@@ -5,12 +5,16 @@ import sys
 from gsp import GSP
 from util import argmax_index
 
-class BBAgent:
+class Millybudget:
     """Balanced bidding agent"""
     def __init__(self, id, value, budget):
         self.id = id
         self.value = value
         self.budget = budget
+        self.rates = []
+        self.decay = 0.95
+        self.bump = 1.02
+        self.threshold = 0.65
 
     def initial_bid(self, reserve):
         return self.value / 2
@@ -49,10 +53,15 @@ class BBAgent:
 
         returns a list of utilities per slot.
         """
-        # TODO: Fill this in
-        utilities = []   # Change this
-
-        
+        info = self.slot_info(t, history, reserve)
+        utilities = []
+        for i in info:
+            (slot_id, min_bid, max_bid) = i
+            clicks = history.round(t-1).clicks[slot_id]
+            utility = clicks * (self.value - min_bid)
+            if min_bid != 0:
+                self.rates.append(utility / min_bid)
+            utilities.append(utility)
         return utilities
 
     def target_slot(self, t, history, reserve):
@@ -63,9 +72,10 @@ class BBAgent:
         the other-agent bid for that slot in the last round.  If slot_id = 0,
         max_bid is min_bid * 2
         """
-        i =  argmax_index(self.expected_utils(t, history, reserve))
+        utilities = self.expected_utils(t, history, reserve)
+        i =  argmax_index(utilities)
         info = self.slot_info(t, history, reserve)
-        return info[i]
+        return info[i], utilities[i]
 
     def bid(self, t, history, reserve):
         # The Balanced bidding strategy (BB) is the strategy for a player j that, given
@@ -79,10 +89,53 @@ class BBAgent:
         # If s*_j is the top slot, bid the value v_j
 
         prev_round = history.round(t-1)
-        (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
+        (slot, min_bid, _max_bid), utility = self.target_slot(t, history, reserve)
 
         # TODO: Fill this in.
-        bid = 0  # change this
+        ###########
+        # if min_bid == 0:
+        #     if self.threshold == 0:
+        #         self.threshold = 1
+        # elif self.threshold == 0:
+        #     self.threshold = utility / min_bid
+        # elif utility / min_bid < (self.threshold * self.decay):
+        #     temp = utility / self.threshold
+        #     self.threshold = .5 * (self.threshold + utility / min_bid)
+        #     min_bid = temp
+        # else:
+        #     self.threshold = .5 * (self.threshold + utility / min_bid)
+        # self.decay *= 0.99
+
+        # def mean(l):
+        #     return sum(l) / len(l)
+
+        # if min_bid == 0 :
+        #     pass
+        # elif len(self.rates) == 0 or (utility / min_bid >= (mean(self.rates) * self.decay)):
+        #     self.rates.append(utility / min_bid)
+        # else:
+        #     temp = utility / (mean(self.rates) * self.decay)
+        #     self.rates.append(utility / min_bid)
+        #     min_bid = temp
+        # self.decay *= 0.97
+
+        if min_bid == 0:
+            pass
+        elif utility / min_bid <= sorted(self.rates)[int(len(self.rates) * self.threshold)]:
+            return min(self.value, min_bid)
+        self.threshold *= self.decay
+        ###########
+
+        if slot == 0:
+            return self.value
+        
+        clicks_target = prev_round.clicks[slot]
+        clicks_above = prev_round.clicks[slot - 1]
+        
+        bid = self.value - (clicks_target * (self.value - min_bid)) / clicks_above
+
+        # bid *= self.bump
+        # bid = 0.8*(min_bid+_max_bid)
         
         return bid
 

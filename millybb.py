@@ -49,7 +49,6 @@ class Millybb:
 
         returns a list of utilities per slot.
         """
-        # TODO: Fill this in
         info = self.slot_info(t, history, reserve)
         utilities = []
         for i in info:
