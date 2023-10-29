@@ -12,8 +12,7 @@ class Millybudget:
         self.value = value
         self.budget = budget
         self.rates = []
-        self.decay = 0.95
-        self.bump = 1.02
+        self.decay = 0.97
         self.threshold = 0.65
 
     def initial_bid(self, reserve):
@@ -91,34 +90,7 @@ class Millybudget:
         prev_round = history.round(t-1)
         (slot, min_bid, _max_bid), utility = self.target_slot(t, history, reserve)
 
-        # TODO: Fill this in.
         ###########
-        # if min_bid == 0:
-        #     if self.threshold == 0:
-        #         self.threshold = 1
-        # elif self.threshold == 0:
-        #     self.threshold = utility / min_bid
-        # elif utility / min_bid < (self.threshold * self.decay):
-        #     temp = utility / self.threshold
-        #     self.threshold = .5 * (self.threshold + utility / min_bid)
-        #     min_bid = temp
-        # else:
-        #     self.threshold = .5 * (self.threshold + utility / min_bid)
-        # self.decay *= 0.99
-
-        # def mean(l):
-        #     return sum(l) / len(l)
-
-        # if min_bid == 0 :
-        #     pass
-        # elif len(self.rates) == 0 or (utility / min_bid >= (mean(self.rates) * self.decay)):
-        #     self.rates.append(utility / min_bid)
-        # else:
-        #     temp = utility / (mean(self.rates) * self.decay)
-        #     self.rates.append(utility / min_bid)
-        #     min_bid = temp
-        # self.decay *= 0.97
-
         if min_bid == 0:
             pass
         elif utility / min_bid <= sorted(self.rates)[int(len(self.rates) * self.threshold)]:
