@@ -55,16 +55,20 @@ class Millybb:
         prev_round = history.round(t-1)
         for i in info:
             (slot_id, min_bid, max_bid) = i
-            clicks = history.round(t-1).clicks[slot_id]
-            # Switch case
+            clicks = prev_round.clicks[slot_id]
+            #########
+            ## Switch case
             # if t > 23:
             #     other_bids = [bid for bid in prev_round.bids if bid[0] != self.id]
-            #     vcg_result = VCG.compute(prev_round.clicks,reserve, other_bids)
+            #     vcg_result = VCG.compute(prev_round.clicks, reserve, other_bids)
             #     per_click_payments = vcg_result[1]
             #     pricej = per_click_payments[slot_id]
             # else:
             #     pricej = min_bid
+            #########
+            ## Normal case
             pricej = min_bid
+            #########
             utility = clicks * (self.value - pricej)
             utilities.append(utility)
         return utilities
@@ -91,43 +95,10 @@ class Millybb:
         # clicks_{s*_j} (v_j - t_{s*_j}(j)) = clicks_{s*_j-1}(v_j - b')
         # (p_x is the price/click in slot x)
         # If s*_j is the top slot, bid the value v_j
-        
-        # prev_round = history.round(t-1)
-        # (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
 
-        # TODO: Fill this in.
-        # This is code for the switch
-        # if t < 25:
-        #     if slot > 0:
-        #         pricej = min_bid
-        #     else:
-        #         pricej = None
-        # else:
-        #     other_bids = [bid for bid in prev_round.bids if bid[0] != self.id]
-        #     #VCG case
-        #     vcg_result = VCG.compute(prev_round.clicks,reserve, other_bids)
-        #     _, per_click_payments = vcg_result
-        #     if slot > 0:
-        #         # In VCG, pricej for slot j is the payment at slot j-1
-        #         pricej = per_click_payments[slot - 1]  
-        #     else:
-        #         pricej = None 
-        
-        # if slot == 0 or pricej is None:
-        #     return self.value
-        
-        # clicks_target = prev_round.clicks[slot]
-        # clicks_above = prev_round.clicks[slot - 1]
-
-        # bid = self.value - (clicks_target * (self.value - pricej)) / clicks_above
-
-        # return bid
-
-        #Case of GSP
         prev_round = history.round(t-1)
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
 
-        # TODO: Fill this in.
         if slot == 0:
             return self.value
         elif min_bid >= self.value:
